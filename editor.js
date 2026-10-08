@@ -21,6 +21,9 @@ const PIECE_NAMES = {
   toigo_halter_dress_knee_length: "Dress", mindfront_female_trousers_1: "Pants", "mindfront_f_one-piece_swimsuit_01": "Swimsuit"
 };
 const STORE = "fc-editor-v1";
+const hiddenPieces = new Set();
+const EYE_OPEN = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_SHUT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
 const DEFAULT_LAYERS = {
   wolgade_female_top_01: 10, wolgade_female_panties_01: 10, "mindfront_f_one-piece_swimsuit_01": 10,
   cortu_cargo_pants: 20, toigo_wool_pants: 20, mindfront_female_trousers_1: 20,
@@ -193,7 +196,9 @@ function paint() {
     if (!o.isMesh) return;
     const n = o.name;
     if (n.startsWith("body__") || n.startsWith("piece__")) {
-      o.visible = outfitList(n).includes(outfit);
+      const anyHidden = [...hiddenPieces].some(h => h.startsWith(`${outfit}|`));
+      if (n.startsWith("body__")) o.visible = outfitList(n).includes(anyHidden ? "base" : outfit);
+      else o.visible = (outfitList(n).includes(outfit) && !hiddenPieces.has(`${outfit}|${assetOf(n)}`)) || (anyHidden && outfit !== "base" && outfitList(n).includes("base"));
     }
     if (!o.visible) return;
     const m = o.material;
@@ -209,7 +214,7 @@ function paint() {
       m.color.setRGB(1, 1, 1);
     } else if (n.startsWith("piece__")) {
       const asset = assetOf(n);
-      const e = entryFor(outfit, asset);
+      const e = entryFor(outfit, asset) || entryFor("base", asset);
       if (!e) return;
       const rgb = e[1];
       if (rgb === "camo") {
@@ -303,7 +308,7 @@ function buildPieces() {
     const colorHex = Array.isArray(e[1]) ? rgbToHex(e[1]) : "#808080";
     const fit = Math.round((e[2] || 0) * 1000);
     div.innerHTML = `
-      <div class="name">${PIECE_NAMES[asset] || asset}</div>
+      <div class="head"><span class="name">${PIECE_NAMES[asset] || asset}</span><button type="button" class="eye" data-k="eye"></button></div>
       <label class="row">Look <select data-k="mode">
         <option value="color"${mode === "color" ? " selected" : ""}>Custom color</option>
         <option value="orig"${mode === "orig" ? " selected" : ""}>Original colors</option>
@@ -317,6 +322,21 @@ function buildPieces() {
     const fitIn = div.querySelector('[data-k="fit"]');
     const fitOut = div.querySelector("output");
     const layerIn = div.querySelector('[data-k="layer"]');
+    const eye = div.querySelector('[data-k="eye"]');
+    const hideKey = `${current.outfit}|${asset}`;
+    const drawEye = () => {
+      const off = hiddenPieces.has(hideKey);
+      eye.innerHTML = off ? EYE_SHUT : EYE_OPEN;
+      eye.title = off ? "Show this piece" : "Hide this piece";
+      eye.setAttribute("aria-label", eye.title);
+      div.classList.toggle("off", off);
+    };
+    drawEye();
+    eye.addEventListener("click", () => {
+      if (hiddenPieces.has(hideKey)) hiddenPieces.delete(hideKey); else hiddenPieces.add(hideKey);
+      drawEye();
+      paint();
+    });
     layerIn.addEventListener("change", () => {
       let v = parseInt(layerIn.value, 10);
       if (!Number.isFinite(v)) v = layerOf(e);

@@ -43,7 +43,11 @@ input[type=color] { width: 100%; height: 34px; border: 1px solid var(--line); bo
 input[type=range] { width: 100%; accent-color: var(--accent); }
 input[type=number] { width: 100%; padding: 7px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; }
 .piece { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
-.piece .name { font-weight: 600; margin-bottom: 6px; }
+.piece .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.piece .name { font-weight: 600; }
+.piece .eye { width: 32px; height: 28px; padding: 0; display: grid; place-items: center; border-radius: 8px; color: var(--ink); }
+.piece.off .name { color: var(--muted); text-decoration: line-through; }
+.piece.off .eye { color: var(--muted); }
 .piece .fit { display: grid; grid-template-columns: 30px 30px 1fr 30px 52px; align-items: center; gap: 6px; margin-top: 6px; }
 .piece .fit .step { width: 30px; height: 30px; padding: 0; border-radius: 8px; font-size: 16px; line-height: 1; }
 .piece .fit output { white-space: nowrap; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -87,7 +91,7 @@ button:hover { filter: brightness(1.05); }
 
     <h2>Outfit pieces</h2>
     <div id="pieces"></div>
-    <p class="note">Outfit colors and fit are shared by all 8 women. Fit moves the clothing out from the body (looser) or in toward it (tighter). Layer sets which piece goes on top where two pieces overlap: higher goes over lower, for example boots 40 over pants 20 tucks the pants into the boots. Where the lower piece pokes through, it is pulled just inside the higher one.</p>
+    <p class="note">Outfit colors and fit are shared by all 8 women. Fit moves the clothing out from the body (looser) or in toward it (tighter). Layer sets which piece goes on top where two pieces overlap: higher goes over lower, for example boots 40 over pants 20 tucks the pants into the boots. Where the lower piece pokes through, it is pulled just inside the higher one. The eye button hides a piece while you look underneath. It is not saved or exported.</p>
 
     <h2>Save</h2>
     <div class="buttons">
