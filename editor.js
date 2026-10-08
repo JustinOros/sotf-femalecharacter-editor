@@ -332,7 +332,13 @@ function buildPieces() {
       div.classList.toggle("off", off);
     };
     drawEye();
+    if (current.outfit === "base") {
+      eye.disabled = true;
+      eye.title = "Underwear always stays on";
+      eye.setAttribute("aria-label", eye.title);
+    }
     eye.addEventListener("click", () => {
+      if (eye.disabled) return;
       if (hiddenPieces.has(hideKey)) hiddenPieces.delete(hideKey); else hiddenPieces.add(hideKey);
       drawEye();
       paint();

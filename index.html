@@ -48,6 +48,7 @@ input[type=number] { width: 100%; padding: 7px 8px; border-radius: 8px; border: 
 .piece .eye { width: 32px; height: 28px; padding: 0; display: grid; place-items: center; border-radius: 8px; color: var(--ink); }
 .piece.off .name { color: var(--muted); text-decoration: line-through; }
 .piece.off .eye { color: var(--muted); }
+.piece .eye:disabled { opacity: .35; cursor: not-allowed; }
 .piece .fit { display: grid; grid-template-columns: 30px 30px 1fr 30px 52px; align-items: center; gap: 6px; margin-top: 6px; }
 .piece .fit .step { width: 30px; height: 30px; padding: 0; border-radius: 8px; font-size: 16px; line-height: 1; }
 .piece .fit output { white-space: nowrap; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
