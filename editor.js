@@ -154,7 +154,7 @@ async function getWoman(i) {
       m.depthWrite = true;
       m.side = THREE.DoubleSide;
     });
-    if (o.name.startsWith("piece__")) {
+    if (o.name.startsWith("piece__") || /_hair$/.test(o.name)) {
       o.material = o.material.clone();
       const pos = o.geometry.attributes.position;
       o.userData.base = pos.array.slice();
@@ -232,6 +232,61 @@ function paint() {
     }
   });
   applyLayers(layered);
+  w.root.traverse(o => {
+    if (!o.isMesh || !/_hair$/.test(o.name) || !o.userData.base) return;
+    if (o.userData.axisZ === undefined) {
+      let body = null;
+      w.root.traverse(b => { if (b.isMesh && b.name === "body__base") body = b; });
+      const bp = body ? body.geometry.attributes.position.array : null;
+      const zs = [];
+      if (bp) for (let i = 0; i < bp.length; i += 3) if (bp[i + 1] > 1.1 && bp[i + 1] < 1.4 && Math.abs(bp[i]) < 0.12) zs.push(bp[i + 2]);
+      zs.sort((p, q) => p - q);
+      o.userData.axisZ = zs.length ? zs[zs.length >> 1] : 0;
+    }
+    const pos = o.geometry.attributes.position;
+    pos.array.set(o.userData.base);
+    pos.needsUpdate = true;
+    layered.forEach(item => pushOutside(o, item.mesh));
+  });
+}
+
+function pushOutside(hair, piece, reach = 0.15, gap = 0.008) {
+  const hp = piece.geometry.attributes.position.array;
+  const lp = hair.geometry.attributes.position;
+  const a = lp.array;
+  const zc = hair.userData.axisZ ?? 0;
+  const SLICES = 128, CELL = 0.01;
+  const grid = new Map();
+  const bucket = (x, y, z) => {
+    const ang = Math.atan2(z - zc, x);
+    return [Math.floor((ang + Math.PI) / (2 * Math.PI) * SLICES), Math.floor(y / CELL)];
+  };
+  for (let i = 0; i < hp.length; i += 3) {
+    const [s, h] = bucket(hp[i], hp[i + 1], hp[i + 2]);
+    const k = s * 100000 + h;
+    let list = grid.get(k);
+    if (!list) grid.set(k, list = []);
+    list.push(Math.hypot(hp[i], hp[i + 2] - zc));
+  }
+  let moved = 0;
+  for (let v = 0; v < a.length; v += 3) {
+    const x = a[v], y = a[v + 1], z = a[v + 2];
+    const r = Math.hypot(x, z - zc);
+    if (r < 1e-4) continue;
+    const [s, h] = bucket(x, y, z);
+    let maxR = -1;
+    for (let ds = -1; ds <= 1; ds++) for (let dh = -1; dh <= 1; dh++) {
+      const list = grid.get(((s + ds + SLICES) % SLICES) * 100000 + h + dh);
+      if (!list) continue;
+      for (const pr of list) if (pr < r + reach && pr > maxR) maxR = pr;
+    }
+    if (maxR < 0 || r >= maxR + gap) continue;
+    const k = (maxR + gap) / r;
+    a[v] = x * k;
+    a[v + 2] = zc + (z - zc) * k;
+    moved++;
+  }
+  if (moved) lp.needsUpdate = true;
 }
 
 function applyLayers(items) {
