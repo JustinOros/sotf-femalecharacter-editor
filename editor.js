@@ -252,7 +252,7 @@ function buildPieces() {
         <option value="camo"${mode === "camo" ? " selected" : ""}>Camo</option>
       </select></label>
       <label class="row">Color <input type="color" data-k="color" value="${colorHex}"${mode === "color" ? "" : " disabled"}></label>
-      <div class="fit"><span>Fit</span><input type="range" min="-10" max="30" step="1" value="${fit}" data-k="fit"><output>${fit} mm</output></div>
+      <div class="fit"><span>Fit</span><button type="button" class="step" data-k="minus" aria-label="Tighter">-</button><input type="range" min="-10" max="30" step="1" value="${fit}" data-k="fit"><button type="button" class="step" data-k="plus" aria-label="Looser">+</button><output>${fit} mm</output></div>
       <label class="row">Layer <input type="number" min="0" max="99" step="1" value="${layerOf(e)}" data-k="layer"></label>`;
     const modeSel = div.querySelector('[data-k="mode"]');
     const colorIn = div.querySelector('[data-k="color"]');
@@ -274,13 +274,17 @@ function buildPieces() {
       changed();
     });
     colorIn.addEventListener("input", () => { e[1] = hexToRgb(colorIn.value); changed(); });
-    fitIn.addEventListener("input", () => {
-      const v = parseInt(fitIn.value, 10);
+    const setFit = v => {
+      v = Math.max(-10, Math.min(30, v));
+      fitIn.value = v;
       fitOut.textContent = `${v} mm`;
       while (e.length < 3) e.push(0);
       e[2] = v / 1000;
       changed();
-    });
+    };
+    fitIn.addEventListener("input", () => setFit(parseInt(fitIn.value, 10)));
+    div.querySelector('[data-k="minus"]').addEventListener("click", () => setFit(parseInt(fitIn.value, 10) - 1));
+    div.querySelector('[data-k="plus"]').addEventListener("click", () => setFit(parseInt(fitIn.value, 10) + 1));
     box.appendChild(div);
   });
 }

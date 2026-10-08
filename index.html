@@ -44,8 +44,9 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 input[type=number] { width: 100%; padding: 7px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; }
 .piece { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
 .piece .name { font-weight: 600; margin-bottom: 6px; }
-.piece .fit { display: grid; grid-template-columns: 110px 1fr 54px; align-items: center; gap: 10px; margin-top: 6px; }
-.piece .fit output { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.piece .fit { display: grid; grid-template-columns: 30px 30px 1fr 30px 52px; align-items: center; gap: 6px; margin-top: 6px; }
+.piece .fit .step { width: 30px; height: 30px; padding: 0; border-radius: 8px; font-size: 16px; line-height: 1; }
+.piece .fit output { white-space: nowrap; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
 .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
 button { padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; }
 button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; grid-column: 1 / -1; }
