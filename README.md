@@ -7,7 +7,7 @@ Open the page, pick a woman and an outfit, and change:
 - Skin tone, hair color and eye color for each woman
 - The color of every clothing piece, or switch a piece to its original colors or camo
 - The fit of every clothing piece (tighter or looser)
-- The layer of every clothing piece (0 to 99). Where two pieces overlap, the higher layer goes on top, for example boots at 40 over pants at 20 tucks the pants into the boots. Layers are applied when the models are rebuilt, so the preview does not show them.
+- The layer of every clothing piece (0 to 99). Where two pieces overlap, the higher layer goes on top, for example boots at 40 over pants at 20 tucks the pants into the boots. The preview shows the result live.
 
 Changes are kept in your browser while you work. Click **Export changes (zip)** to download `femalecharacter-settings.zip` and send it back. **Import zip** loads a zip you exported earlier so you can keep editing.
 

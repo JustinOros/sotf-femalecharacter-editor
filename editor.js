@@ -147,7 +147,7 @@ async function getWoman(i) {
     const mats = Array.isArray(o.material) ? o.material : [o.material];
     mats.forEach(m => {
       m.transparent = false;
-      m.alphaTest = 0.5;
+      m.alphaTest = /_(hair|eyebrows|eyelashes|eyes)$/.test(o.name) ? 0.5 : 0;
       m.depthWrite = true;
       m.side = THREE.DoubleSide;
     });
@@ -188,6 +188,7 @@ function paint() {
   if (!w) return;
   const ws = state.women[current.woman];
   const outfit = current.outfit;
+  const layered = [];
   w.root.traverse(o => {
     if (!o.isMesh) return;
     const n = o.name;
@@ -222,8 +223,65 @@ function paint() {
         m.color.setRGB(lin(2 * rgb[0] / 255), lin(2 * rgb[1] / 255), lin(2 * rgb[2] / 255));
       }
       applyFit(o, e[2] || 0, w.unitScale);
+      layered.push({ mesh: o, layer: layerOf(e) });
     }
   });
+  applyLayers(layered);
+}
+
+function applyLayers(items) {
+  items.sort((a, b) => b.layer - a.layer);
+  for (let i = 1; i < items.length; i++) {
+    for (let k = 0; k < i; k++) {
+      if (items[k].layer > items[i].layer) pushInside(items[i].mesh, items[k].mesh);
+    }
+  }
+}
+
+function pushInside(low, high, reach = 0.05, gap = 0.006, side = 0.02) {
+  const hp = high.geometry.attributes.position.array;
+  const hn = high.geometry.attributes.normal.array;
+  const lp = low.geometry.attributes.position;
+  const a = lp.array;
+  const ln = low.geometry.attributes.normal.array;
+  const cell = reach;
+  const grid = new Map();
+  const key = (x, y, z) => `${x},${y},${z}`;
+  for (let i = 0; i < hp.length; i += 3) {
+    const k = key(Math.floor(hp[i] / cell), Math.floor(hp[i + 1] / cell), Math.floor(hp[i + 2] / cell));
+    let list = grid.get(k);
+    if (!list) grid.set(k, list = []);
+    list.push(i);
+  }
+  const r2 = reach * reach;
+  let moved = 0;
+  for (let v = 0; v < a.length; v += 3) {
+    const x = a[v], y = a[v + 1], z = a[v + 2];
+    const cx = Math.floor(x / cell), cy = Math.floor(y / cell), cz = Math.floor(z / cell);
+    let best = -1, bd = r2;
+    for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) {
+      const list = grid.get(key(cx + dx, cy + dy, cz + dz));
+      if (!list) continue;
+      for (const i of list) {
+        const ex = x - hp[i], ey = y - hp[i + 1], ez = z - hp[i + 2];
+        const d2 = ex * ex + ey * ey + ez * ez;
+        if (d2 < bd) { bd = d2; best = i; }
+      }
+    }
+    if (best < 0) continue;
+    let nx = ln[v], ny = ln[v + 1], nz = ln[v + 2];
+    if (nx * hn[best] + ny * hn[best + 1] + nz * hn[best + 2] < 0) { nx = hn[best]; ny = hn[best + 1]; nz = hn[best + 2]; }
+    const d = (x - hp[best]) * nx + (y - hp[best + 1]) * ny + (z - hp[best + 2]) * nz;
+    const t2 = bd - d * d;
+    if (d > -gap && t2 < side * side) {
+      const s = d + gap;
+      a[v] = x - nx * s;
+      a[v + 1] = y - ny * s;
+      a[v + 2] = z - nz * s;
+      moved++;
+    }
+  }
+  if (moved) lp.needsUpdate = true;
 }
 
 async function show() {
