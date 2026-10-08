@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemaleCharacter Editor</title>
+<style>
+:root {
+  --bg: #f4f3ef;
+  --panel: #ffffff;
+  --ink: #1d1d1b;
+  --muted: #6b6a64;
+  --line: #e2e0d8;
+  --accent: #3d6b4f;
+  --accent-ink: #ffffff;
+  --stage: #c9ccc6;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161715;
+    --panel: #1f201e;
+    --ink: #ecebe6;
+    --muted: #9b9a93;
+    --line: #33342f;
+    --accent: #7fb08f;
+    --accent-ink: #10130f;
+    --stage: #2a2c29;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.app { display: grid; grid-template-columns: 360px 1fr; height: 100vh; }
+aside { background: var(--panel); border-right: 1px solid var(--line); overflow-y: auto; padding: 18px 18px 40px; }
+main { position: relative; background: var(--stage); }
+canvas { display: block; width: 100%; height: 100%; }
+h1 { font-size: 18px; margin: 0 0 4px; letter-spacing: .2px; }
+.sub { color: var(--muted); margin: 0 0 16px; font-size: 13px; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 22px 0 10px; font-weight: 600; }
+label.row { display: grid; grid-template-columns: 110px 1fr; align-items: center; gap: 10px; margin: 8px 0; }
+select, button, input[type=file] { font: inherit; color: var(--ink); }
+select { width: 100%; padding: 7px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); }
+input[type=color] { width: 100%; height: 34px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 2px; cursor: pointer; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.piece { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+.piece .name { font-weight: 600; margin-bottom: 6px; }
+.piece .fit { display: grid; grid-template-columns: 110px 1fr 54px; align-items: center; gap: 10px; margin-top: 6px; }
+.piece .fit output { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+button { padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; grid-column: 1 / -1; }
+button:hover { filter: brightness(1.05); }
+.note { color: var(--muted); font-size: 12px; margin-top: 6px; }
+.status { position: absolute; left: 14px; bottom: 12px; background: var(--panel); color: var(--muted); padding: 6px 10px; border-radius: 8px; font-size: 12px; border: 1px solid var(--line); }
+.hint { position: absolute; right: 14px; bottom: 12px; color: var(--muted); font-size: 12px; }
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: 55vh auto; height: auto; }
+  main { order: -1; height: 55vh; }
+  aside { border-right: 0; border-top: 1px solid var(--line); padding: 16px; }
+  .hint { display: none; }
+}
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "./vendor/three/build/three.module.js",
+  "three/addons/": "./vendor/three/examples/jsm/"
+} }
+</script>
+<script src="vendor/jszip.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <h1>FemaleCharacter Editor</h1>
+    <p class="sub">Tweak the women for the Sons of the Forest FemaleCharacter mod, then export your changes.</p>
+
+    <h2>Character</h2>
+    <label class="row">Woman <select id="woman"></select></label>
+    <label class="row">Outfit <select id="outfit"></select></label>
+
+    <h2>Body</h2>
+    <label class="row">Skin tone <input type="color" id="skin"></label>
+    <label class="row">Hair color <input type="color" id="hair"></label>
+    <label class="row">Eye color <select id="eyes"></select></label>
+    <p class="note">Skin tone darkens or tints the skin. White keeps the original.</p>
+
+    <h2>Outfit pieces</h2>
+    <div id="pieces"></div>
+    <p class="note">Outfit colors and fit are shared by all 8 women. Fit moves the clothing out from the body (looser) or in toward it (tighter).</p>
+
+    <h2>Save</h2>
+    <div class="buttons">
+      <button class="primary" id="export">Export changes (zip)</button>
+      <button id="import">Import zip</button>
+      <button id="reset">Reset everything</button>
+    </div>
+    <input type="file" id="file" accept=".zip" hidden>
+    <p class="note">Your changes are kept in this browser while you work. Export the zip and email it back when you are done.</p>
+  </aside>
+  <main>
+    <canvas id="view"></canvas>
+    <div class="status" id="status">Loading</div>
+    <div class="hint">Drag to rotate, scroll to zoom, right drag to pan</div>
+  </main>
+</div>
+<script type="module" src="editor.js"></script>
+</body>
+</html>
