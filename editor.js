@@ -21,6 +21,29 @@ const PIECE_NAMES = {
   toigo_halter_dress_knee_length: "Dress", mindfront_female_trousers_1: "Pants", "mindfront_f_one-piece_swimsuit_01": "Swimsuit"
 };
 const STORE = "fc-editor-v1";
+const DEFAULT_LAYERS = {
+  wolgade_female_top_01: 10, wolgade_female_panties_01: 10, "mindfront_f_one-piece_swimsuit_01": 10,
+  cortu_cargo_pants: 20, toigo_wool_pants: 20, mindfront_female_trousers_1: 20,
+  elvs_male_shirt_untucked_bd1: 30, elvs_halter_style_pantsuit1: 30, punkduck_wetsuit: 30, elvs_racing_fire_suit_female1: 30,
+  culturalibre_hero_suit_1: 30, tiomegamanx_skintight_body_suit_female: 30,
+  mindfront_shoes_biker_boots_female: 40, "scailman_low-heeled_boots": 40,
+  elvs_emt_uniform_jacket_female: 50, elvs_hooded_sweat_jacket1: 50, toigo_fisherman_sweater: 50,
+  toigo_shift_dress: 60, toigo_halter_dress_knee_length: 60, donitz_monk_robe: 60
+};
+
+function layerOf(e) {
+  return e.length > 3 && Number.isFinite(e[3]) ? e[3] : (DEFAULT_LAYERS[e[0]] ?? 30);
+}
+
+function withLayers(outfits) {
+  for (const k in outfits) {
+    outfits[k].forEach(e => {
+      while (e.length < 3) e.push(0);
+      if (e.length < 4) e.push(DEFAULT_LAYERS[e[0]] ?? 30);
+    });
+  }
+  return outfits;
+}
 const $ = id => document.getElementById(id);
 
 let defaults = null;
@@ -95,7 +118,7 @@ function load() {
 async function fetchDefaults() {
   const women = [];
   for (let i = 0; i < 8; i++) women.push(await (await fetch(`settings/woman${i}.json`)).json());
-  const outfits = await (await fetch("settings/outfits.json")).json();
+  const outfits = withLayers(await (await fetch("settings/outfits.json")).json());
   return { women, outfits };
 }
 
@@ -229,11 +252,22 @@ function buildPieces() {
         <option value="camo"${mode === "camo" ? " selected" : ""}>Camo</option>
       </select></label>
       <label class="row">Color <input type="color" data-k="color" value="${colorHex}"${mode === "color" ? "" : " disabled"}></label>
-      <div class="fit"><span>Fit</span><input type="range" min="-10" max="30" step="1" value="${fit}" data-k="fit"><output>${fit} mm</output></div>`;
+      <div class="fit"><span>Fit</span><input type="range" min="-10" max="30" step="1" value="${fit}" data-k="fit"><output>${fit} mm</output></div>
+      <label class="row">Layer <input type="number" min="0" max="99" step="1" value="${layerOf(e)}" data-k="layer"></label>`;
     const modeSel = div.querySelector('[data-k="mode"]');
     const colorIn = div.querySelector('[data-k="color"]');
     const fitIn = div.querySelector('[data-k="fit"]');
     const fitOut = div.querySelector("output");
+    const layerIn = div.querySelector('[data-k="layer"]');
+    layerIn.addEventListener("change", () => {
+      let v = parseInt(layerIn.value, 10);
+      if (!Number.isFinite(v)) v = layerOf(e);
+      v = Math.max(0, Math.min(99, v));
+      layerIn.value = v;
+      while (e.length < 4) e.push(e.length === 2 ? 0 : layerOf(e));
+      e[3] = v;
+      save();
+    });
     modeSel.addEventListener("change", () => {
       e[1] = modeSel.value === "camo" ? "camo" : (modeSel.value === "orig" ? null : hexToRgb(colorIn.value));
       colorIn.disabled = modeSel.value !== "color";
@@ -335,7 +369,7 @@ async function importZip(ev) {
       if (file) next.women[i] = JSON.parse(await file.async("string"));
     }
     const of = zip.file("outfits.json");
-    if (of) next.outfits = JSON.parse(await of.async("string"));
+    if (of) next.outfits = withLayers(JSON.parse(await of.async("string")));
     state = next;
     save();
     fillSelects();
@@ -359,6 +393,7 @@ function loop() {
   loop();
   defaults = await fetchDefaults();
   state = load() || JSON.parse(JSON.stringify(defaults));
+  withLayers(state.outfits);
   fillSelects();
   syncBody();
   wire();
