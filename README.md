@@ -2,6 +2,8 @@
 
 A web page for tweaking the women in [sotf-femalecharacter](https://github.com/JustinOros/sotf-femalecharacter) without installing anything.
 
+**Live site: https://justinoros.github.io/sotf-femalecharacter-editor/**
+
 Open the page, pick a woman and an outfit, and change:
 
 - Skin tone, hair color and eye color for each woman
