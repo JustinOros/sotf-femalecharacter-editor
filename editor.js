@@ -18,9 +18,10 @@ const PIECE_NAMES = {
   elvs_male_shirt_untucked_bd1: "Shirt", toigo_wool_pants: "Pants", punkduck_wetsuit: "Wetsuit",
   elvs_racing_fire_suit_female1: "Suit", donitz_monk_robe: "Robe", toigo_shift_dress: "Dress",
   culturalibre_hero_suit_1: "Bodysuit", tiomegamanx_skintight_body_suit_female: "Bodysuit",
-  toigo_halter_dress_knee_length: "Dress", mindfront_female_trousers_1: "Pants", "mindfront_f_one-piece_swimsuit_01": "Swimsuit"
+  toigo_halter_dress_knee_length: "Dress", mindfront_female_trousers_1: "Pants", "mindfront_f_one-piece_swimsuit_01": "Swimsuit",
+  "punkduck_off-shoulder_long-sleeve_top": "Off-shoulder top"
 };
-const STORE = "fc-editor-v1";
+const STORE = "fc-editor-v2";
 const hiddenPieces = new Set();
 const EYE_OPEN = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 const EYE_SHUT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
@@ -113,16 +114,36 @@ function save() {
 function load() {
   try {
     const raw = localStorage.getItem(STORE);
-    if (raw) return JSON.parse(raw);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (s && Array.isArray(s.women) && s.women.length === 8 && Array.isArray(s.outfits) && s.outfits.length === 8) return s;
   } catch (e) {}
   return null;
 }
 
 async function fetchDefaults() {
   const women = [];
-  for (let i = 0; i < 8; i++) women.push(await (await fetch(`settings/woman${i}.json`)).json());
-  const outfits = withLayers(await (await fetch("settings/outfits.json")).json());
+  const outfits = [];
+  const files = {};
+  for (let i = 0; i < 8; i++) {
+    const w = await (await fetch(`settings/woman${i}.json`)).json();
+    women.push(w);
+    const name = w.outfits || "outfits.json";
+    if (!files[name]) files[name] = await (await fetch(`settings/${name}`)).json();
+    outfits.push(withLayers(JSON.parse(JSON.stringify(files[name]))));
+  }
   return { women, outfits };
+}
+
+function isOutfitSet(s) {
+  return !!s && typeof s === "object" && !Array.isArray(s) && Object.values(s).every(Array.isArray);
+}
+
+function fillMissing(set, i) {
+  for (const k in defaults.outfits[i]) {
+    if (!set[k]) set[k] = JSON.parse(JSON.stringify(defaults.outfits[i][k]));
+  }
+  return set;
 }
 
 function outfitList(name) {
@@ -136,7 +157,7 @@ function assetOf(name) {
 }
 
 function entryFor(outfit, asset) {
-  return (state.outfits[outfit] || []).find(e => e[0] === asset);
+  return (state.outfits[current.woman][outfit] || []).find(e => e[0] === asset);
 }
 
 async function getWoman(i) {
@@ -355,7 +376,13 @@ async function show() {
 function buildPieces() {
   const box = $("pieces");
   box.innerHTML = "";
-  (state.outfits[current.outfit] || []).forEach((e, idx) => {
+  const w = loaded[current.woman];
+  let present = null;
+  if (w) {
+    present = new Set();
+    w.root.traverse(o => { if (o.isMesh && o.name.startsWith("piece__")) present.add(assetOf(o.name)); });
+  }
+  (state.outfits[current.woman][current.outfit] || []).forEach((e, idx) => {
     const asset = e[0];
     const div = document.createElement("div");
     div.className = "piece";
@@ -371,7 +398,7 @@ function buildPieces() {
       </select></label>
       <label class="row">Color <input type="color" data-k="color" value="${colorHex}"${mode === "color" ? "" : " disabled"}></label>
       <div class="fit"><span>Fit</span><button type="button" class="step" data-k="minus" aria-label="Tighter">-</button><input type="range" min="-10" max="30" step="1" value="${fit}" data-k="fit"><button type="button" class="step" data-k="plus" aria-label="Looser">+</button><output>${fit} mm</output></div>
-      <label class="row">Layer <input type="number" min="0" max="99" step="1" value="${layerOf(e)}" data-k="layer"></label>`;
+      <label class="row">Layer <input type="number" min="0" max="99" step="1" value="${layerOf(e)}" data-k="layer"></label>${present && !present.has(asset) ? '<p class="note">Not in the preview yet. Your settings for it are still saved and exported.</p>' : ""}`;
     const modeSel = div.querySelector('[data-k="mode"]');
     const colorIn = div.querySelector('[data-k="color"]');
     const fitIn = div.querySelector('[data-k="fit"]');
@@ -441,16 +468,30 @@ function changed() {
   paint();
 }
 
-function fillSelects() {
-  $("woman").innerHTML = WOMEN.map((r, i) => `<option value="${i}">Woman${i} (${r})</option>`).join("");
-  $("outfit").innerHTML = Object.keys(state.outfits).map(o => `<option value="${o}">${OUTFIT_NAMES[o] || o}</option>`).join("");
-  $("eyes").innerHTML = EYES.map(c => `<option value="${c}">${c}</option>`).join("");
-  $("woman").value = current.woman;
+function fillOutfits() {
+  const keys = Object.keys(state.outfits[current.woman]);
+  if (!keys.includes(current.outfit)) current.outfit = keys[0];
+  $("outfit").innerHTML = keys.map(o => `<option value="${o}">${OUTFIT_NAMES[o] || o}</option>`).join("");
   $("outfit").value = current.outfit;
 }
 
+function fillSelects() {
+  $("woman").innerHTML = WOMEN.map((r, i) => `<option value="${i}">Woman${i} (${r})</option>`).join("");
+  $("eyes").innerHTML = EYES.map(c => `<option value="${c}">${c}</option>`).join("");
+  $("woman").value = current.woman;
+  fillOutfits();
+}
+
 function wire() {
-  $("woman").addEventListener("change", async () => { current.woman = +$("woman").value; syncBody(); await show(); });
+  $("woman").addEventListener("change", async () => {
+    current.woman = +$("woman").value;
+    hiddenPieces.clear();
+    $("pieces").innerHTML = "";
+    fillOutfits();
+    syncBody();
+    await show();
+    buildPieces();
+  });
   $("outfit").addEventListener("change", () => { current.outfit = $("outfit").value; buildPieces(); show(); });
   $("skin").addEventListener("input", () => {
     const rgb = hexToRgb($("skin").value).map(v => +(v / 255).toFixed(3));
@@ -487,8 +528,11 @@ function confirmReset() {
 
 async function exportZip() {
   const zip = new JSZip();
-  state.women.forEach((w, i) => zip.file(`woman${i}.json`, JSON.stringify(w, null, 1)));
-  zip.file("outfits.json", JSON.stringify(state.outfits, null, 1));
+  state.women.forEach((w, i) => {
+    const file = `outfits_woman${i}.json`;
+    zip.file(`woman${i}.json`, JSON.stringify({ ...w, outfits: file }, null, 1));
+    zip.file(file, JSON.stringify(state.outfits[i], null, 1));
+  });
   const blob = await zip.generateAsync({ type: "blob" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -507,19 +551,37 @@ async function importZip(ev) {
   try {
     const zip = await JSZip.loadAsync(f);
     const next = JSON.parse(JSON.stringify(state));
+    const readJson = async name => {
+      const z = zip.file(name) || Object.values(zip.files).find(x => !x.dir && x.name.split("/").pop() === name);
+      return z ? JSON.parse(await z.async("string")) : null;
+    };
+    const shared = await readJson("outfits.json");
+    let found = 0, own = 0, fromShared = 0;
     for (let i = 0; i < 8; i++) {
-      const file = zip.file(`woman${i}.json`);
-      if (file) next.women[i] = JSON.parse(await file.async("string"));
+      const w = await readJson(`woman${i}.json`);
+      if (w) { next.women[i] = w; found++; }
+      let set = null;
+      const names = [`outfits_woman${i}.json`, w && w.outfits].filter(n => n && n !== "outfits.json");
+      for (const n of names) {
+        set = await readJson(n);
+        if (set) break;
+      }
+      if (set) own++;
+      else if (shared) { set = JSON.parse(JSON.stringify(shared)); fromShared++; }
+      if (set) {
+        if (!isOutfitSet(set)) throw new Error("bad outfits");
+        next.outfits[i] = fillMissing(withLayers(set), i);
+      }
     }
-    const of = zip.file("outfits.json");
-    if (of) next.outfits = withLayers(JSON.parse(await of.async("string")));
+    if (!found && !own && !fromShared) throw new Error("nothing to import");
     state = next;
     save();
+    hiddenPieces.clear();
     fillSelects();
     syncBody();
+    await show();
     buildPieces();
-    paint();
-    status(`Imported ${f.name}`);
+    status(fromShared && !own ? `Imported ${f.name} (old format, one outfit set applied to all women)` : `Imported ${f.name}`);
   } catch (e) {
     status(`Could not read ${f.name}`);
   }
@@ -536,10 +598,10 @@ function loop() {
   loop();
   defaults = await fetchDefaults();
   state = load() || JSON.parse(JSON.stringify(defaults));
-  withLayers(state.outfits);
+  state.outfits.forEach((s, i) => fillMissing(withLayers(s), i));
   fillSelects();
   syncBody();
   wire();
-  buildPieces();
   await show();
+  buildPieces();
 })();

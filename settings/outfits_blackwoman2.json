@@ -3,9 +3,9 @@
   [
    "wolgade_female_top_01",
    [
-    40,
-    40,
-    44
+    255,
+    184,
+    205
    ],
    0,
    10
@@ -13,11 +13,11 @@
   [
    "wolgade_female_panties_01",
    [
-    40,
-    40,
-    44
+    255,
+    229,
+    237
    ],
-   0,
+   0.004,
    10
   ]
  ],
@@ -25,9 +25,9 @@
   [
    "elvs_emt_uniform_jacket_female",
    [
-    48,
-    50,
-    48
+    14,
+    22,
+    14
    ],
    0,
    50
@@ -35,31 +35,31 @@
   [
    "cortu_cargo_pants",
    [
-    52,
-    54,
-    50
+    28,
+    34,
+    22
    ],
-   0,
+   0.003,
    20
   ],
   [
    "mindfront_shoes_biker_boots_female",
    [
-    30,
+    46,
     28,
-    26
+    10
    ],
-   0,
-   40
+   -0.003,
+   5
   ]
  ],
  "hoodie": [
   [
    "elvs_hooded_sweat_jacket1",
    [
-    95,
-    98,
-    92
+    208,
+    144,
+    153
    ],
    0,
    50
@@ -67,9 +67,9 @@
   [
    "cortu_cargo_pants",
    [
-    52,
-    54,
-    50
+    211,
+    220,
+    222
    ],
    0,
    20
@@ -77,11 +77,11 @@
   [
    "mindfront_shoes_biker_boots_female",
    [
-    30,
-    28,
-    26
+    247,
+    161,
+    161
    ],
-   0,
+   0.02,
    40
   ]
  ],
@@ -89,9 +89,9 @@
   [
    "elvs_emt_uniform_jacket_female",
    [
-    92,
-    70,
-    48
+    30,
+    21,
+    16
    ],
    0,
    50
@@ -99,21 +99,21 @@
   [
    "cortu_cargo_pants",
    [
-    52,
-    54,
-    50
+    137,
+    119,
+    108
    ],
-   0,
+   -0.002,
    20
   ],
   [
    "mindfront_shoes_biker_boots_female",
    [
-    30,
-    28,
-    26
+    136,
+    87,
+    83
    ],
-   0,
+   0.014,
    40
   ]
  ],
@@ -121,9 +121,9 @@
   [
    "elvs_emt_uniform_jacket_female",
    [
-    28,
-    26,
-    25
+    5,
+    2,
+    13
    ],
    0,
    50
@@ -131,21 +131,21 @@
   [
    "cortu_cargo_pants",
    [
-    52,
-    54,
-    50
+    133,
+    81,
+    99
    ],
-   0,
+   -0.002,
    20
   ],
   [
    "mindfront_shoes_biker_boots_female",
    [
-    30,
-    28,
-    26
+    203,
+    202,
+    211
    ],
-   0,
+   0.013,
    40
   ]
  ],
@@ -153,31 +153,31 @@
   [
    "toigo_fisherman_sweater",
    [
-    150,
-    60,
-    40
+    238,
+    155,
+    181
    ],
-   0,
+   0.005,
    50
   ],
   [
    "cortu_cargo_pants",
    [
-    52,
-    54,
-    50
+    225,
+    208,
+    208
    ],
-   0,
+   -0.002,
    20
   ],
   [
    "mindfront_shoes_biker_boots_female",
    [
-    30,
-    28,
-    26
+    12,
+    11,
+    20
    ],
-   0,
+   0.01,
    40
   ]
  ],
@@ -185,9 +185,9 @@
   [
    "elvs_halter_style_pantsuit1",
    [
-    22,
-    22,
-    24
+    255,
+    179,
+    201
    ],
    0,
    30
@@ -195,21 +195,21 @@
   [
    "scailman_low-heeled_boots",
    [
-    20,
-    20,
-    20
+    247,
+    222,
+    227
    ],
    0,
-   40
+   5
   ]
  ],
  "pyjamas": [
   [
-   "elvs_male_shirt_untucked_bd1",
+   "punkduck_off-shoulder_long-sleeve_top",
    [
-    110,
-    35,
-    45
+    249,
+    154,
+    166
    ],
    0,
    30
@@ -217,18 +217,22 @@
   [
    "toigo_wool_pants",
    [
-    110,
-    35,
-    45
+    240,
+    117,
+    134
    ],
-   0,
+   0.003,
    20
   ]
  ],
  "wetsuit": [
   [
    "punkduck_wetsuit",
-   null,
+   [
+    247,
+    120,
+    165
+   ],
    0,
    30
   ]
@@ -237,11 +241,11 @@
   [
    "elvs_racing_fire_suit_female1",
    [
-    225,
-    225,
-    220
+    241,
+    132,
+    206
    ],
-   0,
+   0.002,
    30
   ]
  ],
@@ -249,9 +253,9 @@
   [
    "donitz_monk_robe",
    [
-    22,
-    22,
-    24
+    21,
+    5,
+    10
    ],
    0,
    60
@@ -261,9 +265,9 @@
   [
    "toigo_shift_dress",
    [
-    30,
-    40,
-    80
+    16,
+    25,
+    50
    ],
    0,
    60
@@ -271,9 +275,9 @@
   [
    "scailman_low-heeled_boots",
    [
-    20,
-    20,
-    20
+    196,
+    197,
+    207
    ],
    0,
    40
@@ -283,9 +287,9 @@
   [
    "culturalibre_hero_suit_1",
    [
-    205,
-    165,
-    65
+    127,
+    72,
+    94
    ],
    0,
    30
@@ -294,7 +298,11 @@
  "v_camosuit": [
   [
    "tiomegamanx_skintight_body_suit_female",
-   "camo",
+   [
+    41,
+    15,
+    30
+   ],
    0,
    30
   ]
@@ -303,9 +311,9 @@
   [
    "toigo_halter_dress_knee_length",
    [
-    60,
-    90,
-    160
+    254,
+    210,
+    210
    ],
    0,
    60
@@ -315,9 +323,9 @@
   [
    "tiomegamanx_skintight_body_suit_female",
    [
-    28,
-    24,
-    22
+    29,
+    20,
+    17
    ],
    0,
    30
@@ -327,9 +335,9 @@
   [
    "elvs_hooded_sweat_jacket1",
    [
-    170,
-    120,
-    140
+    255,
+    173,
+    190
    ],
    0,
    50
@@ -337,18 +345,22 @@
   [
    "mindfront_female_trousers_1",
    [
-    170,
-    120,
-    140
+    247,
+    237,
+    241
    ],
-   0,
+   0.002,
    20
   ]
  ],
  "v_swimsuit": [
   [
    "mindfront_f_one-piece_swimsuit_01",
-   null,
+   [
+    255,
+    82,
+    125
+   ],
    0,
    10
   ]
